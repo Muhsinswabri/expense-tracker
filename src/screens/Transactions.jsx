@@ -28,7 +28,7 @@ export default function Transactions({ list, period, setPeriod, kind, setKind, l
         </div>
       ) : (
         <Empty
-          emoji="🗂️"
+
           title="Nothing Here Yet"
           text={list.length ? 'No transactions match this filter.' : 'Start by adding your first income or expense.'}
         />

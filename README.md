@@ -80,7 +80,7 @@ Same as Add Income, with these changes:
 |---|---|---|
 | `type` | yes | `expense`, `income`, `to_receive` |
 | `amount` | yes | `250`, `1,250.50` and `₹250` are all accepted |
-| `category` | no | Matched case-insensitively. Unknown values become `Other` |
+| `category` | no | Built-in names are matched case-insensitively. Other names (e.g. your custom `Gym`) are kept as given. Empty becomes `Other` |
 | `note` | no | Up to 200 characters |
 | `date` | no | Defaults to the day the Shortcut ran |
 | `expectedDate` | no | For `to_receive`. Accepts `2026-10-15`, `15 Oct 2026` or `15/10/2026` |

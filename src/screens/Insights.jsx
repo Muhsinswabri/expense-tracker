@@ -20,7 +20,7 @@ export default function Insights({ stats, breakdown, period, setPeriod }) {
           </div>
         </>
       ) : (
-        <Empty emoji="📊" title="No Spending Yet" text="Expenses you add will be broken down by category here." />
+        <Empty title="No Spending Yet" text="Expenses you add will be broken down by category here." />
       )}
     </div>
   )

@@ -1,4 +1,4 @@
-import { emojiFor } from '../lib/categories.js'
+import { DoodleTile } from './Doodle.jsx'
 import { dayLabel, money, shortDate } from '../lib/format.js'
 
 export default function TransactionRow({ tx, highlight, onOpen, onReceive }) {
@@ -8,9 +8,7 @@ export default function TransactionRow({ tx, highlight, onOpen, onReceive }) {
   return (
     <div className={`flex items-center gap-2 ${highlight ? 'animate-row-in' : ''}`}>
       <button type="button" onClick={() => onOpen(tx)} className="flex min-w-0 flex-1 items-center gap-3.5 py-2.5 text-left active:opacity-50">
-        <span className="w-8 shrink-0 text-center text-[26px] leading-none" aria-hidden="true">
-          {emojiFor(tx.type, tx.category)}
-        </span>
+        <DoodleTile name={tx.category} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[16px] font-medium">{tx.category}</span>
           {sub && <span className="block truncate text-[12px] text-muted">{sub}</span>}

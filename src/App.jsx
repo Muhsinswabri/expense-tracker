@@ -19,8 +19,8 @@ const TABS = [
 ]
 const ACTIONS = [
   { type: 'expense', label: 'Expense', style: 'bg-ink text-bg' },
-  { type: 'income', label: 'Income', style: 'border border-ink' },
-  { type: 'to_receive', label: 'Receive', style: 'bg-fill' },
+  { type: 'income', label: 'Income', style: 'border border-ink bg-bg' },
+  { type: 'to_receive', label: 'Receive', style: 'border border-line bg-bg' },
 ]
 
 /*
@@ -138,27 +138,35 @@ export default function App() {
   const { tab, kind } = view
   const shared = { list, period, setPeriod, lastAddedId, onOpen, onReceive }
   return (
-    <div className="mx-auto min-h-dvh max-w-lg px-5 pt-[calc(env(safe-area-inset-top)+12px)] pb-[calc(env(safe-area-inset-bottom)+148px)] sm:px-6">
+    // Bottom padding clears the nav (58px) + floating actions (44px) + gaps, plus the home indicator.
+    <div
+      className={`mx-auto min-h-dvh max-w-lg px-5 pb-[calc(env(safe-area-inset-bottom)+140px)] sm:px-6 ${
+        tab === 'home' ? '' : 'pt-[calc(env(safe-area-inset-top)+12px)]' // Home's sticky header handles the top itself
+      }`}
+    >
       <main key={tab} className="animate-screen-in">
         {tab === 'home' && <Home {...shared} txs={txs} stats={stats} breakdown={breakdown} goTo={goTo} />}
         {tab === 'transactions' && <Transactions {...shared} kind={kind} setKind={setKind} />}
         {tab === 'insights' && <Insights stats={stats} breakdown={breakdown} period={period} setPeriod={setPeriod} />}
       </main>
 
-      <nav className="blur-bar fixed inset-x-0 bottom-0 z-40 border-t border-line pb-safe">
+      <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+70px)] z-40">
+        <div className="pointer-events-auto mx-auto grid max-w-lg grid-cols-3 gap-2 px-5 sm:px-6">
+          {ACTIONS.map((a) => (
+            <button
+              key={a.type}
+              type="button"
+              onClick={() => onAdd(a.type)}
+              className={`press h-11 min-w-0 truncate rounded-full px-2 text-[14px] font-semibold whitespace-nowrap shadow-[0_6px_18px_rgba(0,0,0,0.12)] min-[380px]:text-[15px] ${a.style}`}
+            >
+              + {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.03)]">
         <div className="mx-auto max-w-lg px-5 sm:px-6">
-          <div className="grid grid-cols-3 gap-2 pt-3">
-            {ACTIONS.map((a) => (
-              <button
-                key={a.type}
-                type="button"
-                onClick={() => onAdd(a.type)}
-                className={`press h-11 rounded-full text-[15px] font-semibold ${a.style}`}
-              >
-                + {a.label}
-              </button>
-            ))}
-          </div>
           <div className="grid h-[58px] grid-cols-4">
             {TABS.map((t) => {
               const on = tab === t.id

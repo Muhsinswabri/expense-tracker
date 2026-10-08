@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { monthLabel } from '../lib/format.js'
 import { currentMonth } from '../lib/ledger.js'
@@ -18,19 +18,28 @@ export function periodLabel({ mode, month }) {
 /** "this month ⌄" pill with a small menu: today / week / month / all, or any month. */
 export default function PeriodPill({ period, setPeriod, align = 'center' }) {
   const [open, setOpen] = useState(false)
+  const root = useRef(null)
   const pick = (next) => {
     setPeriod(next)
     setOpen(false)
   }
+
+  // Close on any tap outside. (A fixed overlay won't work inside the blurred sticky header.)
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e) => root.current?.contains(e.target) || setOpen(false)
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [open])
+
   return (
-    <div className="relative">
+    <div ref={root} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} className="pill press h-9 font-medium" aria-haspopup="menu" aria-expanded={open}>
         {periodLabel(period)}
         <ChevronDown size={14} strokeWidth={2} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
           <div
             role="menu"
             className={`absolute top-10 z-40 w-48 overflow-hidden ${align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'} rounded-[18px] border border-line bg-bg py-1 shadow-[0_12px_40px_rgba(0,0,0,0.12)] animate-pop-in`}

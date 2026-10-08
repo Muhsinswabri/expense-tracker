@@ -3,8 +3,12 @@ import { sortTransactions } from './ledger.js'
 
 const COLUMNS = ['id', 'type', 'status', 'amount', 'category', 'date', 'expectedDate', 'note', 'createdAt']
 
-export function toJSON(list) {
-  return JSON.stringify({ app: 'chelaveee', version: 1, exportedAt: new Date().toISOString(), transactions: sortTransactions(list) }, null, 2)
+export function toJSON(list, categories = []) {
+  return JSON.stringify(
+    { app: 'chelaveee', version: 2, exportedAt: new Date().toISOString(), transactions: sortTransactions(list), categories },
+    null,
+    2,
+  )
 }
 
 function csvCell(v) {
@@ -38,7 +42,7 @@ export async function saveFile(text, ext, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-// Accepts this app's export or a bare array of transactions.
+// Accepts this app's export (with custom categories) or a bare array of transactions.
 export function readBackup(text) {
   let data
   try {
@@ -48,5 +52,5 @@ export function readBackup(text) {
   }
   const list = Array.isArray(data) ? data : data?.transactions
   if (!Array.isArray(list)) throw new Error("This file isn't a valid backup.")
-  return list
+  return { transactions: list, categories: Array.isArray(data?.categories) ? data.categories : [] }
 }

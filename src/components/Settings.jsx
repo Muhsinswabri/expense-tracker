@@ -37,7 +37,7 @@ function Group({ title, footer, children }) {
 }
 
 export default function Settings() {
-  const { txs, importMany, clearAll, syncInbox } = useStore()
+  const { txs, categories, importMany, clearAll, syncInbox } = useStore()
   const toast = useToast()
   const [key, setKeyState] = useState(getKey)
   const [theme, setThemeState] = useState(getTheme)
@@ -67,7 +67,7 @@ export default function Settings() {
   const doExport = async (kind) => {
     if (!txs.length) return toast('Nothing to export yet', 'error')
     try {
-      if (kind === 'json') await saveFile(toJSON(txs), 'json', 'application/json')
+      if (kind === 'json') await saveFile(toJSON(txs, categories), 'json', 'application/json')
       else await saveFile(toCSV(txs), 'csv', 'text/csv')
     } catch {
       toast("Couldn't export. Please try again.", 'error')
@@ -79,7 +79,8 @@ export default function Settings() {
     e.target.value = ''
     if (!file) return
     try {
-      const { added, skipped } = await importMany(readBackup(await file.text()))
+      const backup = readBackup(await file.text())
+      const { added, skipped } = await importMany(backup.transactions, backup.categories)
       toast(added ? `Imported ${added}${skipped ? ` · ${skipped} skipped` : ''}` : 'Nothing new to import')
     } catch (err) {
       toast(err?.name === 'Error' ? err.message : "Couldn't import this file.", 'error')

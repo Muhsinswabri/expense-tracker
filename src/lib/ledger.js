@@ -1,3 +1,4 @@
+import { categoriesFor } from '../../shared/transaction.js'
 import { toKey, todayKey } from './format.js'
 
 // The date a transaction belongs to: when money moved, or when it's expected.
@@ -71,4 +72,12 @@ export function lastCategory(list, type) {
   let best
   for (const t of list) if (t.type === type && (!best || t.createdAt > best.createdAt)) best = t
   return best?.category
+}
+
+// Chips offered for a type: built-ins (except Other, replaced by "+ Add Category"), then custom ones.
+export function categoryOptions(custom, type) {
+  return [
+    ...categoriesFor(type).filter((c) => c !== 'Other'),
+    ...custom.filter((c) => c.type === type).map((c) => c.name),
+  ]
 }

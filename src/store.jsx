@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { normalizeTransaction } from '../shared/transaction.js'
+import { TYPES, cleanCategoryName, normalizeTransaction } from '../shared/transaction.js'
 import * as db from './lib/db.js'
 import { toKey, todayKey } from './lib/format.js'
-import { sortTransactions } from './lib/ledger.js'
+import { categoryOptions, sortTransactions } from './lib/ledger.js'
 import { ackInbox, fetchInbox, getKey } from './lib/sync.js'
 
 const Store = createContext(null)
@@ -29,12 +29,32 @@ export function StoreProvider({ children }) {
     setTxs(txsRef.current)
   }
 
+  // Custom categories: { id: "type:name", type, name, createdAt }.
+  const [categories, setCategories] = useState([])
+  const catsRef = useRef(categories)
+  const commitCats = (next) => {
+    catsRef.current = [...next].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    setCategories(catsRef.current)
+  }
+
   useEffect(() => {
-    db.getAll()
-      .then(commit)
+    Promise.all([db.getAll().then(commit), db.getCategories().then(commitCats)])
       .catch(() => {})
       .finally(() => setReady(true))
     navigator.storage?.persist?.().catch(() => {})
+  }, [])
+
+  // Returns the saved name ("gym" -> "Gym"); throws a friendly Error when empty or a duplicate.
+  const addCategory = useCallback(async (type, raw) => {
+    const name = cleanCategoryName(raw)
+    if (!name) throw new Error('Enter a category name.')
+    if (categoryOptions(catsRef.current, type).some((c) => c.toLowerCase() === name.toLowerCase())) {
+      throw new Error(`${name} already exists.`)
+    }
+    const rec = { id: `${type}:${name.toLowerCase()}`, type, name, createdAt: new Date().toISOString() }
+    await db.putCategories([rec])
+    commitCats([...catsRef.current, rec])
+    return name
   }, [])
 
   const add = useCallback(async (input) => {
@@ -65,8 +85,22 @@ export function StoreProvider({ children }) {
     [update],
   )
 
-  // Merges by id; existing transactions are kept as they are.
-  const importMany = useCallback(async (rawList) => {
+  // Merges by id; existing transactions and categories are kept as they are.
+  const importMany = useCallback(async (rawList, rawCategories = []) => {
+    const haveCats = new Set(catsRef.current.map((c) => c.id))
+    const freshCats = []
+    for (const c of Array.isArray(rawCategories) ? rawCategories : []) {
+      const name = cleanCategoryName(c?.name)
+      const id = `${c?.type}:${name.toLowerCase()}`
+      if (!name || !TYPES.includes(c?.type) || haveCats.has(id)) continue
+      haveCats.add(id)
+      freshCats.push({ id, type: c.type, name, createdAt: typeof c.createdAt === 'string' ? c.createdAt : new Date().toISOString() })
+    }
+    if (freshCats.length) {
+      await db.putCategories(freshCats)
+      commitCats([...catsRef.current, ...freshCats])
+    }
+
     const have = new Set(txsRef.current.map((t) => t.id))
     const fresh = []
     let skipped = 0
@@ -86,8 +120,9 @@ export function StoreProvider({ children }) {
   }, [])
 
   const clearAll = useCallback(async () => {
-    await db.clear()
+    await Promise.all([db.clear(), db.clearCategories()])
     commit([])
+    commitCats([])
   }, [])
 
   // Returns the number of new transactions, or throws { unauthorized }.
@@ -124,8 +159,8 @@ export function StoreProvider({ children }) {
   }, [])
 
   const value = useMemo(
-    () => ({ txs, ready, lastAddedId, add, update, remove, markReceived, importMany, clearAll, syncInbox }),
-    [txs, ready, lastAddedId, add, update, remove, markReceived, importMany, clearAll, syncInbox],
+    () => ({ txs, categories, ready, lastAddedId, add, update, remove, markReceived, addCategory, importMany, clearAll, syncInbox }),
+    [txs, categories, ready, lastAddedId, add, update, remove, markReceived, addCategory, importMany, clearAll, syncInbox],
   )
   return <Store.Provider value={value}>{children}</Store.Provider>
 }

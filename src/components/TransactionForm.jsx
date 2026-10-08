@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronRight, Delete, Trash2, X } from 'lucide-react'
-import { categoriesFor, parseAmount } from '../../shared/transaction.js'
-import { emojiFor } from '../lib/categories.js'
+import { parseAmount } from '../../shared/transaction.js'
 import { fromKey, money, todayKey } from '../lib/format.js'
-import { lastCategory } from '../lib/ledger.js'
+import { categoryOptions, lastCategory } from '../lib/ledger.js'
 import { useStore } from '../store.jsx'
-import { Confirm, useToast } from './ui.jsx'
+import Doodle from './Doodle.jsx'
+import { Confirm, Prompt, useToast } from './ui.jsx'
 
 const NAME = { expense: 'Expense', income: 'Income', to_receive: 'To Receive' }
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back']
@@ -51,24 +51,33 @@ function DateRow({ label, value, onChange }) {
  * Reports unsaved changes through onDirty so closing can ask first.
  */
 export default function TransactionForm({ tx, initialType = 'expense', onDone, onClose, onDirty }) {
-  const { txs, add, update, remove, markReceived } = useStore()
+  const { txs, categories, add, update, remove, markReceived, addCategory } = useStore()
   const toast = useToast()
   const editing = Boolean(tx)
   const type = tx?.type ?? initialType
   const pending = type === 'to_receive'
 
-  const [initial] = useState(() => ({
-    amount: tx ? String(tx.amount) : '',
-    category: tx?.category ?? lastCategory(txs, type) ?? categoriesFor(type)[0],
-    date: (pending ? tx?.expectedDate : tx?.date) ?? todayKey(),
-    note: tx?.note ?? '',
-  }))
+  const [initial] = useState(() => {
+    const options = categoryOptions(categories, type)
+    const last = lastCategory(txs, type)
+    return {
+      amount: tx ? String(tx.amount) : '',
+      category: tx?.category ?? (options.includes(last) ? last : options[0]),
+      date: (pending ? tx?.expectedDate : tx?.date) ?? todayKey(),
+      note: tx?.note ?? '',
+    }
+  })
   const [amount, setAmount] = useState(initial.amount)
   const [category, setCategory] = useState(initial.category)
   const [date, setDate] = useState(initial.date)
   const [note, setNote] = useState(initial.note)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [adding, setAdding] = useState(false)
   const busy = useRef(false)
+
+  // An older transaction may use a category that isn't offered any more (e.g. Other): keep it visible.
+  const options = categoryOptions(categories, type)
+  const chips = options.includes(category) ? options : [...options, category]
 
   const value = parseAmount(amount)
   const dirty = amount !== initial.amount || category !== initial.category || date !== initial.date || note !== initial.note
@@ -164,7 +173,7 @@ export default function TransactionForm({ tx, initialType = 'expense', onDone, o
       </div>
 
       <div className="mt-5 flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="Category">
-        {categoriesFor(type).map((c) => {
+        {chips.map((c) => {
           const on = c === category
           return (
             <button
@@ -173,14 +182,37 @@ export default function TransactionForm({ tx, initialType = 'expense', onDone, o
               role="radio"
               aria-checked={on}
               onClick={() => setCategory(c)}
-              className={`pill press h-10 px-4 text-[15px] transition-colors duration-200 ${on ? 'border-ink bg-ink font-medium text-bg' : ''}`}
+              className={`pill press h-10 max-w-full px-3.5 text-[15px] transition-colors duration-200 ${on ? 'border-ink bg-ink font-medium text-bg' : ''}`}
             >
-              <span aria-hidden="true">{on ? '✓' : emojiFor(type, c)}</span>
-              {c}
+              {on ? <Check size={17} strokeWidth={2.4} /> : <Doodle name={c} size={18} />}
+              <span className="truncate">{c}</span>
             </button>
           )
         })}
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className="pill press h-10 border-dashed border-muted px-3.5 text-[15px] text-muted"
+        >
+          <Doodle name="_add" size={17} />
+          Add Category
+        </button>
       </div>
+
+      <Prompt
+        open={adding}
+        title="Add Category"
+        label="Category Name"
+        placeholder="e.g. Gym"
+        confirmLabel="Add"
+        onCancel={() => setAdding(false)}
+        onConfirm={async (name) => {
+          const saved = await addCategory(type, name)
+          setCategory(saved)
+          setAdding(false)
+          toast(`${saved} Added`)
+        }}
+      />
 
       <div className="mt-5 overflow-hidden rounded-[16px] bg-fill">
         <DateRow label={pending ? 'Expected Date' : 'Date'} value={date} onChange={setDate} />

@@ -57,9 +57,22 @@ export function parseDate(v) {
   return `${y}-${pad(m)}-${pad(d)}`
 }
 
+// "  gym   bag " -> "Gym Bag". Max 30 characters; empty string when nothing usable.
+export function cleanCategoryName(v) {
+  return String(v ?? '')
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 30)
+    .trim()
+    .replace(/(^|\s)(\S)/g, (_, sp, ch) => sp + ch.toUpperCase())
+}
+
+// Built-in names are matched case-insensitively; any other name is a custom category.
 function matchCategory(type, v) {
-  const s = String(v ?? '').trim().toLowerCase()
-  return categoriesFor(type).find((c) => c.toLowerCase() === s) ?? 'Other'
+  const name = cleanCategoryName(v)
+  if (!name) return 'Other'
+  return categoriesFor(type).find((c) => c.toLowerCase() === name.toLowerCase()) ?? name
 }
 
 /**

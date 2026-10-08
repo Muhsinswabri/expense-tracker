@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { CategoryPills } from '../components/Breakdown.jsx'
 import PeriodPill from '../components/PeriodPill.jsx'
 import { DayGroup, byDay } from '../components/TransactionRow.jsx'
@@ -32,9 +33,20 @@ function Heading({ children, action, onAction }) {
 
 export default function Home({ txs, list, stats, breakdown, period, setPeriod, lastAddedId, onOpen, onReceive, goTo }) {
   const recent = list.slice(0, RECENT)
+  // Hairline under the sticky header only once content scrolls beneath it.
+  const [scrolled, setScrolled] = useState(() => window.scrollY > 4)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
   return (
     <div className="space-y-8">
-      <header className="flex items-center justify-between">
+      <header
+        className={`blur-bar sticky top-0 z-30 -mx-5 flex items-center justify-between border-b px-5 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 transition-colors duration-200 sm:-mx-6 sm:px-6 ${
+          scrolled ? 'border-line' : 'border-transparent'
+        }`}
+      >
         <div className="flex items-center gap-2.5">
           <img src="/logo.png" alt="" className="size-8 rounded-[9px]" onError={(e) => (e.currentTarget.style.display = 'none')} />
           <span className="text-[20px] font-semibold tracking-tight">Chelaveee</span>
@@ -74,7 +86,7 @@ export default function Home({ txs, list, stats, breakdown, period, setPeriod, l
             ))}
           </div>
         ) : (
-          <Empty emoji="🌱" title="Nothing Here Yet" text="Start by adding your first income or expense." />
+          <Empty title="Nothing Here Yet" text="Start by adding your first income or expense." />
         )}
       </section>
     </div>

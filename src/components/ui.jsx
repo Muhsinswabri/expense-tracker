@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { money } from '../lib/format.js'
+import { DoodleTile } from './Doodle.jsx'
 
 /* ---------- Toast ---------- */
 
@@ -146,12 +147,76 @@ export function Confirm({ open, title, message, confirmLabel, onConfirm, onCance
 
 /* ---------- Empty state ---------- */
 
-export function Empty({ emoji, title, text }) {
+export function Empty({ title, text }) {
   return (
     <div className="flex flex-col items-center px-8 py-14 text-center animate-fade-in">
-      {emoji && <div className="mb-3 text-[40px] leading-none">{emoji}</div>}
+      <div className="mb-3"><DoodleTile size={56} /></div>
       <p className="text-[17px] font-semibold">{title}</p>
       {text && <p className="mt-1 max-w-[260px] text-[14px] leading-snug text-muted">{text}</p>}
     </div>
+  )
+}
+
+/* ---------- Single-field prompt (e.g. Add Category) ---------- */
+
+export function Prompt({ open, title, label, placeholder, confirmLabel, onConfirm, onCancel }) {
+  const [value, setValue] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (open) {
+      setValue('')
+      setError('')
+    }
+  }, [open])
+  if (!open) return null
+
+  const submit = async (e) => {
+    e.preventDefault()
+    if (busy) return
+    setBusy(true)
+    try {
+      await onConfirm(value)
+    } catch (err) {
+      setError(err?.name === 'Error' && err.message ? err.message : "Couldn't save. Please try again.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Sits in the upper part of the screen so the iOS keyboard never covers it.
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex justify-center px-6 pt-[max(18vh,calc(env(safe-area-inset-top)+24px))]" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="absolute inset-0 bg-[var(--scrim)] animate-fade-in" onClick={onCancel} />
+      <form onSubmit={submit} className="relative h-fit w-full max-w-[320px] rounded-[24px] bg-bg p-5 shadow-[0_20px_60px_rgba(0,0,0,0.2)] animate-pop-in">
+        <h3 className="text-center text-[17px] font-semibold">{title}</h3>
+        <label className="mt-4 block text-[13px] font-medium text-muted">
+          {label}
+          <input
+            autoFocus
+            value={value}
+            maxLength={30}
+            enterKeyHint="done"
+            autoCapitalize="words"
+            placeholder={placeholder}
+            onChange={(e) => {
+              setValue(e.target.value)
+              setError('')
+            }}
+            className="mt-1.5 h-11 w-full rounded-[12px] bg-fill px-3.5 text-[16px] text-ink outline-none placeholder:text-muted focus:ring-2 focus:ring-ink"
+          />
+        </label>
+        {error && <p className="mt-2 text-[13px] text-danger">{error}</p>}
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button type="button" onClick={onCancel} className="press h-11 rounded-full border border-line text-[15px]">
+            Cancel
+          </button>
+          <button type="submit" disabled={!value.trim() || busy} className="press h-11 rounded-full bg-ink text-[15px] font-semibold text-bg disabled:opacity-30">
+            {confirmLabel}
+          </button>
+        </div>
+      </form>
+    </div>,
+    document.body,
   )
 }
