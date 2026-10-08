@@ -1,25 +1,27 @@
 import Doodle, { DoodleTile } from './Doodle.jsx'
 import { money } from '../lib/format.js'
 
+// Bar length is the category's real share of total expenses.
 export function CategoryBars({ rows }) {
-  const max = rows[0]?.amount || 1
   return (
     <ul className="space-y-4">
       {rows.map((r) => (
         <li key={r.category} className="flex items-center gap-3.5">
           <DoodleTile name={r.category} />
           <div className="min-w-0 flex-1">
-            <div className="mb-1.5 flex items-baseline justify-between text-[15px]">
-              <span className="font-medium">{r.category}</span>
-              <span className="tabular-nums">
+            <div className="mb-1.5 flex items-baseline justify-between gap-3 text-[15px]">
+              <span className="min-w-0 truncate font-medium">{r.category}</span>
+              <span className="shrink-0 tabular-nums">
                 {money(r.amount)}
-                <span className="ml-2 inline-block w-9 text-right text-[12px] text-muted">{Math.round(r.share * 100)}%</span>
+                <span className="ml-2 inline-block w-9 text-right text-[12px] text-muted">
+                  {r.pct === 0 && r.amount > 0 ? '<1' : r.pct}%
+                </span>
               </span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-fill">
+            <div className="h-1.5 overflow-hidden rounded-full bg-fill">
               <div
                 className="h-full rounded-full bg-ink transition-[width] duration-700 ease-ios"
-                style={{ width: `${Math.max(2, (r.amount / max) * 100)}%` }}
+                style={{ width: `${Math.max(1, r.share * 100)}%` }}
               />
             </div>
           </div>

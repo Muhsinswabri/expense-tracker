@@ -48,23 +48,28 @@ export function inPeriod(list, period) {
 // Sum in paise to avoid floating-point drift.
 const sum = (list) => list.reduce((s, t) => s + Math.round(t.amount * 100), 0) / 100
 
+// Income is received money only; pending To Receive is kept separate and never counted in the balance.
 export function totals(list) {
-  const income = sum(list.filter((t) => t.type === 'income'))
+  const income = sum(list.filter((t) => t.type === 'income' && t.status === 'received'))
   const expenses = sum(list.filter((t) => t.type === 'expense'))
   const pending = list.filter((t) => t.type === 'to_receive')
   return { income, expenses, balance: Math.round((income - expenses) * 100) / 100, toReceive: sum(pending), pendingCount: pending.length }
 }
 
+// Every expense category (built-in or custom), largest first. Amounts sum exactly to total expenses.
+// pct is each category's own share rounded to a whole number, so the sum can be 99–101.
 export function expenseBreakdown(list) {
   const by = new Map()
   for (const t of list) {
     if (t.type !== 'expense') continue
     by.set(t.category, (by.get(t.category) ?? 0) + Math.round(t.amount * 100))
   }
-  const total = [...by.values()].reduce((a, b) => a + b, 0)
-  return [...by]
-    .map(([category, paise]) => ({ category, amount: paise / 100, share: total ? paise / total : 0 }))
-    .sort((a, b) => b.amount - a.amount)
+  const rows = [...by].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  const total = rows.reduce((s, [, paise]) => s + paise, 0)
+  return rows.map(([category, paise]) => {
+    const share = total ? paise / total : 0
+    return { category, amount: paise / 100, share, pct: Math.round(share * 100) }
+  })
 }
 
 // The last category used for a type, to preselect in the add sheet.
