@@ -1,0 +1,47 @@
+import { emojiFor } from '../lib/categories.js'
+import { money } from '../lib/format.js'
+
+export function CategoryBars({ rows }) {
+  const max = rows[0]?.amount || 1
+  return (
+    <ul className="space-y-4">
+      {rows.map((r) => (
+        <li key={r.category} className="flex items-center gap-3.5">
+          <span className="w-8 shrink-0 text-center text-[24px] leading-none" aria-hidden="true">
+            {emojiFor('expense', r.category)}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1.5 flex items-baseline justify-between text-[15px]">
+              <span className="font-medium lowercase">{r.category}</span>
+              <span className="tabular-nums">
+                {money(r.amount)}
+                <span className="ml-2 inline-block w-9 text-right text-[12px] text-muted">{Math.round(r.share * 100)}%</span>
+              </span>
+            </div>
+            <div className="h-1 overflow-hidden rounded-full bg-fill">
+              <div
+                className="h-full rounded-full bg-ink transition-[width] duration-700 ease-ios"
+                style={{ width: `${Math.max(2, (r.amount / max) * 100)}%` }}
+              />
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** Horizontal row of "🍔 food ₹4,500" pills. */
+export function CategoryPills({ rows, onClick }) {
+  return (
+    <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
+      {rows.map((r) => (
+        <button key={r.category} type="button" onClick={onClick} className="pill press shrink-0 border-line">
+          <span aria-hidden="true">{emojiFor('expense', r.category)}</span>
+          <span className="lowercase">{r.category}</span>
+          <span className="tabular-nums text-muted">{money(r.amount)}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
