@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'splash/*.png'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'logo.png'],
       manifest: {
         name: 'Chelaveee',
         short_name: 'Chelaveee',
@@ -28,6 +28,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png}'],
+        globIgnores: ['splash/**'], // iOS reads launch images itself; no need to precache ~1.6 MB
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
       },

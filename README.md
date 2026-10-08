@@ -129,7 +129,7 @@ public/         Generated icons and iOS launch images
 
 All icons come from one file. To change the logo:
 
-1. Save the official logo as `brand/logo.png`. Use a square app-icon image, ideally 1024 px.
+1. Save the official logo as `brand/logo.png` (the current file is the official Chelaveee logo).
 2. Run the icon script:
 
    ```bash
