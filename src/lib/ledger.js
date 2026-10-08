@@ -56,12 +56,15 @@ export function totals(list) {
   return { income, expenses, balance: Math.round((income - expenses) * 100) / 100, toReceive: sum(pending), pendingCount: pending.length }
 }
 
-// Every expense category (built-in or custom), largest first. Amounts sum exactly to total expenses.
+export const expenseBreakdown = (list) => categoryBreakdown(list, 'expense')
+
+// Every category (built-in or custom) of one type, largest first. Amounts sum exactly to that type's
+// total in totals(). For income only received money counts; pending To Receive never does.
 // pct is each category's own share rounded to a whole number, so the sum can be 99–101.
-export function expenseBreakdown(list) {
+export function categoryBreakdown(list, type) {
   const by = new Map()
   for (const t of list) {
-    if (t.type !== 'expense') continue
+    if (t.type !== type || (type === 'income' && t.status !== 'received')) continue
     by.set(t.category, (by.get(t.category) ?? 0) + Math.round(t.amount * 100))
   }
   const rows = [...by].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))

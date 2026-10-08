@@ -147,7 +147,7 @@ export default function App() {
       <main key={tab} className="animate-screen-in">
         {tab === 'home' && <Home {...shared} txs={txs} stats={stats} breakdown={breakdown} goTo={goTo} />}
         {tab === 'transactions' && <Transactions {...shared} kind={kind} setKind={setKind} />}
-        {tab === 'insights' && <Insights stats={stats} breakdown={breakdown} period={period} setPeriod={setPeriod} />}
+        {tab === 'insights' && <Insights list={list} stats={stats} period={period} setPeriod={setPeriod} />}
       </main>
 
       <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+70px)] z-40">

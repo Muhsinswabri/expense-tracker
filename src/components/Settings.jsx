@@ -4,6 +4,7 @@ import { readBackup, saveFile, toCSV, toJSON } from '../lib/backup.js'
 import { getKey, setKey } from '../lib/sync.js'
 import { getTheme, setTheme } from '../lib/theme.js'
 import { useStore } from '../store.jsx'
+import InstallApp from './InstallApp.jsx'
 import { Confirm, Segmented, useToast } from './ui.jsx'
 
 const THEMES = [
@@ -89,7 +90,11 @@ export default function Settings() {
 
   return (
     <div className="pb-2">
-      <section className="mt-4">
+      <Group title="App">
+        <InstallApp />
+      </Group>
+
+      <section className="mt-6">
         <h3 className="mb-1.5 px-4 text-[13px] font-medium text-muted">Appearance</h3>
         <Segmented
           label="Appearance"
