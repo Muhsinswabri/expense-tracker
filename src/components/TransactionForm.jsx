@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronRight, Delete, Trash2, X } from 'lucide-react'
 import { parseAmount } from '../../shared/transaction.js'
 import { fromKey, money, todayKey } from '../lib/format.js'
-import { categoryOptions, lastCategory } from '../lib/ledger.js'
+import { categoryOptions } from '../lib/ledger.js'
 import { useStore } from '../store.jsx'
 import Doodle from './Doodle.jsx'
 import { Confirm, Prompt, useToast } from './ui.jsx'
@@ -51,22 +51,19 @@ function DateRow({ label, value, onChange }) {
  * Reports unsaved changes through onDirty so closing can ask first.
  */
 export default function TransactionForm({ tx, initialType = 'expense', onDone, onClose, onDirty }) {
-  const { txs, categories, add, update, remove, markReceived, addCategory } = useStore()
+  const { categories, add, update, remove, markReceived, addCategory } = useStore()
   const toast = useToast()
   const editing = Boolean(tx)
   const type = tx?.type ?? initialType
   const pending = type === 'to_receive'
 
-  const [initial] = useState(() => {
-    const options = categoryOptions(categories, type)
-    const last = lastCategory(txs, type)
-    return {
-      amount: tx ? String(tx.amount) : '',
-      category: tx?.category ?? (options.includes(last) ? last : options[0]),
-      date: (pending ? tx?.expectedDate : tx?.date) ?? todayKey(),
-      note: tx?.note ?? '',
-    }
-  })
+  // A new transaction starts with no category: the user must pick one. Editing keeps the saved one.
+  const [initial] = useState(() => ({
+    amount: tx ? String(tx.amount) : '',
+    category: tx?.category ?? '',
+    date: (pending ? tx?.expectedDate : tx?.date) ?? todayKey(),
+    note: tx?.note ?? '',
+  }))
   const [amount, setAmount] = useState(initial.amount)
   const [category, setCategory] = useState(initial.category)
   const [date, setDate] = useState(initial.date)
@@ -77,7 +74,7 @@ export default function TransactionForm({ tx, initialType = 'expense', onDone, o
 
   // An older transaction may use a category that isn't offered any more (e.g. Other): keep it visible.
   const options = categoryOptions(categories, type)
-  const chips = options.includes(category) ? options : [...options, category]
+  const chips = !category || options.includes(category) ? options : [...options, category]
 
   const value = parseAmount(amount)
   const dirty = amount !== initial.amount || category !== initial.category || date !== initial.date || note !== initial.note
@@ -104,6 +101,7 @@ export default function TransactionForm({ tx, initialType = 'expense', onDone, o
 
   const save = guard(async () => {
     if (value == null) return
+    if (!category) throw new Error('Please select a category.')
     const fields = { type, amount: value, category, note, ...(pending ? { expectedDate: date, date: null } : { date }) }
     if (editing) {
       await update(tx.id, fields)
@@ -207,8 +205,8 @@ export default function TransactionForm({ tx, initialType = 'expense', onDone, o
         confirmLabel="Add"
         onCancel={() => setAdding(false)}
         onConfirm={async (name) => {
+          // Added to the list only; the user still taps it to select it.
           const saved = await addCategory(type, name)
-          setCategory(saved)
           setAdding(false)
           toast(`${saved} Added`)
         }}
@@ -249,7 +247,7 @@ export default function TransactionForm({ tx, initialType = 'expense', onDone, o
 
       <button
         type="submit"
-        disabled={value == null}
+        disabled={value == null || !category}
         className="press mt-3 flex h-[52px] items-center justify-center gap-2 rounded-full bg-ink text-[17px] font-semibold text-bg transition-opacity disabled:opacity-25"
       >
         <Check size={20} strokeWidth={2.5} />

@@ -75,12 +75,6 @@ export function categoryBreakdown(list, type) {
   })
 }
 
-// The last category used for a type, to preselect in the add sheet.
-export function lastCategory(list, type) {
-  let best
-  for (const t of list) if (t.type === type && (!best || t.createdAt > best.createdAt)) best = t
-  return best?.category
-}
 
 // Chips offered for a type: built-ins (except Other, replaced by "+ Add Category"), then custom ones.
 export function categoryOptions(custom, type) {

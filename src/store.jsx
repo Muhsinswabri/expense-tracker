@@ -57,7 +57,9 @@ export function StoreProvider({ children }) {
     return name
   }, [])
 
+  // Transactions added in the app must name a category (Shortcuts and backups keep the Other fallback).
   const add = useCallback(async (input) => {
+    if (!cleanCategoryName(input?.category)) throw new Error('Please select a category.')
     const tx = validate(input)
     await db.put(tx)
     commit([...txsRef.current, tx])
