@@ -47,7 +47,7 @@ export default function WaveChart({ txs, period, setPeriod }) {
   const dot = selected ? months.indexOf(selected) : -1
 
   return (
-    <div className="-mx-4">
+    <div className="-mx-5 sm:-mx-6">
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full overflow-visible" role="img" aria-label="Monthly spending">
         <path key={months[0]} d={path} pathLength="1" fill="none" stroke="var(--ink)" strokeWidth="2.25" strokeLinecap="round" className="animate-draw" />
         {dot >= 0 && (
@@ -60,9 +60,9 @@ export default function WaveChart({ txs, period, setPeriod }) {
             key={m}
             type="button"
             onClick={() => setPeriod({ mode: 'month', month: m })}
-            className={`press h-8 text-[13px] lowercase transition-colors ${m === selected ? 'font-semibold text-ink' : 'text-muted'}`}
+            className={`press h-8 text-[13px] transition-colors ${m === selected ? 'font-semibold text-ink' : 'text-muted'}`}
           >
-            {fromKey(`${m}-01`).toLocaleDateString('en-IN', { month: 'short' }).toLowerCase()}
+            {fromKey(`${m}-01`).toLocaleDateString('en-IN', { month: 'short' })}
           </button>
         ))}
       </div>

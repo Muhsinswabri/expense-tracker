@@ -1,4 +1,4 @@
-# Ledger
+# Chelaveee
 
 Personal income and expense tracker. React + Vite PWA, data in IndexedDB on your iPhone, with Apple Shortcuts that add transactions without opening the app.
 
@@ -31,7 +31,7 @@ A deep-link approach (Shortcut opens `app/?add=…`) was not used. iOS opens lin
 2. **Storage → Marketplace → Upstash (Redis)**: create a free database and connect it to the project. This sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
 3. **Settings → Environment Variables**: add `SHORTCUT_TOKEN` with a long random value, for example from `openssl rand -hex 24`. Redeploy.
 4. On the iPhone, open the site in Safari, then **Share → Add to Home Screen**.
-5. Open Ledger **from the Home Screen** and go to **Settings → Shortcuts → Key**. Paste the same `SHORTCUT_TOKEN`.
+5. Open Chelaveee **from the Home Screen** and go to **Settings → Shortcuts → Key**. Paste the same `SHORTCUT_TOKEN`.
 
 > Always use the Home Screen app. Its storage is separate from Safari's. Export a JSON backup now and then from Settings.
 
@@ -120,5 +120,30 @@ shared/         Categories and validation used by both app and API
 src/lib/        IndexedDB, totals and periods, backup, sync, formatting
 src/components/ Sheet, form, rows, charts, settings
 src/screens/    Home, Transactions, Insights
-public/         Icons and iOS launch images
+brand/          The official logo (brand/logo.png), source for all icons
+scripts/        icons.mjs: builds icons and launch images from the logo
+public/         Generated icons and iOS launch images
 ```
+
+## Logo and icons
+
+All icons come from one file. To change the logo:
+
+1. Save the official logo as `brand/logo.png`. Use a square app-icon image, ideally 1024 px.
+2. Run the icon script:
+
+   ```bash
+   npm run icons
+   ```
+
+3. Commit the files it updates in `public/`.
+
+The script writes:
+
+- the Home Screen icon (`apple-touch-icon.png`)
+- the PWA icons, including a maskable one padded into the safe zone
+- the favicon
+- the small logo shown in the app header
+- the iOS launch images
+
+An opaque square logo is used edge to edge. iOS rounds the corners itself, so nothing inside the logo is cropped.

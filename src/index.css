@@ -1,35 +1,56 @@
 @import "tailwindcss";
 
+/* Light is the default. data-theme on <html> is set before first paint (index.html). */
 :root {
   --bg: #ffffff;
+  --surface: #ffffff;
   --ink: #0b0b0c;
-  --muted: #8e8e93;
-  --line: rgba(0, 0, 0, 0.1);
-  --fill: #f3f3f4;
-  --fill-strong: #e6e6e8;
+  --muted: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --fill: #f5f5f7;
+  --fill-strong: #e8e8ed;
   --danger: #d0473e;
-  --scrim: rgba(0, 0, 0, 0.22);
-  --bar-bg: rgba(255, 255, 255, 0.86);
+  --scrim: rgba(0, 0, 0, 0.2);
+  --bar-bg: rgba(255, 255, 255, 0.88);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
   color-scheme: light;
 }
 
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --ink: #f5f5f7;
+  --muted: #8d8d93;
+  --line: rgba(255, 255, 255, 0.12);
+  --fill: #1c1c1e;
+  --fill-strong: #2c2c2e;
+  --danger: #f0675d;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --bar-bg: rgba(0, 0, 0, 0.84);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-theme="system"] {
     --bg: #000000;
+    --surface: #1c1c1e;
     --ink: #f5f5f7;
     --muted: #8d8d93;
-    --line: rgba(255, 255, 255, 0.14);
+    --line: rgba(255, 255, 255, 0.12);
     --fill: #1c1c1e;
     --fill-strong: #2c2c2e;
     --danger: #f0675d;
     --scrim: rgba(0, 0, 0, 0.6);
-    --bar-bg: rgba(0, 0, 0, 0.82);
+    --bar-bg: rgba(0, 0, 0, 0.84);
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     color-scheme: dark;
   }
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-surface: var(--surface);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
@@ -88,7 +109,7 @@ select {
   transition: transform 160ms var(--ease-ios), opacity 160ms;
 }
 .press:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
   opacity: 0.8;
 }
 
@@ -98,15 +119,16 @@ select {
   backdrop-filter: saturate(180%) blur(20px);
 }
 
-/* Outlined pill, the core shape of the design. In a layer so utilities can override it. */
+/* Outlined pill. In a layer so utilities can override it. */
 @layer components {
   .pill {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.375rem;
     height: 2rem;
     padding: 0 0.875rem;
-    border: 1px solid var(--ink);
+    border: 1px solid var(--line);
     border-radius: 999px;
     font-size: 14px;
     white-space: nowrap;
@@ -134,6 +156,9 @@ select {
 @keyframes draw {
   from { stroke-dashoffset: 1; }
 }
+@keyframes caret {
+  50% { opacity: 0; }
+}
 
 .animate-sheet-in { animation: sheet-in 420ms var(--ease-ios); }
 .animate-fade-in { animation: fade-in 260ms ease-out; }
@@ -142,6 +167,7 @@ select {
 .animate-pop-in { animation: pop-in 220ms var(--ease-ios); }
 .animate-screen-in { animation: screen-in 260ms var(--ease-ios); }
 .animate-draw { stroke-dasharray: 1; animation: draw 900ms var(--ease-ios); }
+.animate-caret { animation: caret 1s steps(1) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

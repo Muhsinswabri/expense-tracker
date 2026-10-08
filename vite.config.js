@@ -9,11 +9,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'splash/*.png'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'splash/*.png'],
       manifest: {
-        name: 'Ledger',
-        short_name: 'Ledger',
-        description: 'Personal income and expense tracker',
+        name: 'Chelaveee',
+        short_name: 'Chelaveee',
+        description: 'Chelaveee — personal income and expense tracker',
         start_url: '/',
         scope: '/',
         display: 'standalone',
@@ -21,8 +21,8 @@ export default defineConfig({
         background_color: '#FFFFFF',
         theme_color: '#FFFFFF',
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: '/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },

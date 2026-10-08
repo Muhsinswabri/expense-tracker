@@ -12,7 +12,7 @@ export function CategoryBars({ rows }) {
           </span>
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex items-baseline justify-between text-[15px]">
-              <span className="font-medium lowercase">{r.category}</span>
+              <span className="font-medium">{r.category}</span>
               <span className="tabular-nums">
                 {money(r.amount)}
                 <span className="ml-2 inline-block w-9 text-right text-[12px] text-muted">{Math.round(r.share * 100)}%</span>
@@ -34,11 +34,11 @@ export function CategoryBars({ rows }) {
 /** Horizontal row of "🍔 food ₹4,500" pills. */
 export function CategoryPills({ rows, onClick }) {
   return (
-    <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
+    <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 sm:-mx-6 sm:px-6">
       {rows.map((r) => (
         <button key={r.category} type="button" onClick={onClick} className="pill press shrink-0 border-line">
           <span aria-hidden="true">{emojiFor('expense', r.category)}</span>
-          <span className="lowercase">{r.category}</span>
+          <span>{r.category}</span>
           <span className="tabular-nums text-muted">{money(r.amount)}</span>
         </button>
       ))}

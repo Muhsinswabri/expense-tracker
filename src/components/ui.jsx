@@ -36,11 +36,11 @@ export function ToastProvider({ children }) {
   )
 }
 
-/* ---------- Pill toggle: selected option gets an outline ---------- */
+/* ---------- Pill filter: selected option is filled ---------- */
 
 export function Pills({ options, value, onChange, className = '' }) {
   return (
-    <div className={`flex items-center gap-1 ${className}`} role="tablist">
+    <div className={`flex items-center gap-2 ${className}`} role="tablist">
       {options.map((o) => (
         <button
           key={o.value}
@@ -48,7 +48,33 @@ export function Pills({ options, value, onChange, className = '' }) {
           role="tab"
           aria-selected={o.value === value}
           onClick={() => onChange(o.value)}
-          className={`pill press shrink-0 transition-colors duration-200 ${o.value === value ? '' : 'border-transparent text-muted'}`}
+          className={`pill press h-9 shrink-0 transition-colors duration-200 ${o.value === value ? 'border-ink bg-ink text-bg' : 'text-muted'}`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* ---------- iOS segmented control ---------- */
+
+export function Segmented({ options, value, onChange, label }) {
+  const i = Math.max(0, options.findIndex((o) => o.value === value))
+  return (
+    <div className="relative grid rounded-[12px] bg-fill-strong p-0.5" style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }} role="radiogroup" aria-label={label}>
+      <div
+        className="absolute inset-y-0.5 left-0.5 rounded-[10px] bg-surface shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-transform duration-300 ease-ios"
+        style={{ width: `calc((100% - 4px) / ${options.length})`, transform: `translateX(${i * 100}%)` }}
+      />
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          role="radio"
+          aria-checked={o.value === value}
+          onClick={() => onChange(o.value)}
+          className={`relative z-10 h-9 text-[14px] font-medium transition-colors ${o.value === value ? 'text-ink' : 'text-muted'}`}
         >
           {o.label}
         </button>
@@ -106,7 +132,7 @@ export function Confirm({ open, title, message, confirmLabel, onConfirm, onCance
         {message && <p className="mt-1 text-[14px] leading-snug text-muted">{message}</p>}
         <div className="mt-5 grid grid-cols-2 gap-2">
           <button type="button" onClick={onCancel} className="press h-11 rounded-full border border-ink text-[15px]">
-            cancel
+            Cancel
           </button>
           <button type="button" onClick={onConfirm} className="press h-11 rounded-full bg-danger text-[15px] font-semibold text-white">
             {confirmLabel}

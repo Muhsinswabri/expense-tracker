@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { X } from 'lucide-react'
 
 // Distance from the bottom of the layout viewport to the top of the iOS keyboard.
 function useKeyboardInset() {
@@ -27,6 +28,7 @@ export default function Sheet({ open, onClose, title, children }) {
   const keyboard = useKeyboardInset()
 
   if (open && !mounted) setMounted(true)
+  if (open && closing) setClosing(false) // reopened mid-close
   if (!open && mounted && !closing) setClosing(true)
 
   useEffect(() => {
@@ -61,8 +63,8 @@ export default function Sheet({ open, onClose, title, children }) {
   const onPointerUp = () => {
     if (start.current == null) return
     start.current = null
-    if (drag > 90) onClose()
-    else setDrag(0)
+    if (drag > 90) onClose() // may be refused (unsaved changes), so snap back either way
+    setDrag(0)
   }
 
   const shown = !closing
@@ -82,7 +84,7 @@ export default function Sheet({ open, onClose, title, children }) {
         }}
       >
         <div
-          className="flex flex-col rounded-t-[28px] bg-bg shadow-[0_-8px_40px_rgba(0,0,0,0.12)]"
+          className="flex flex-col rounded-t-[28px] border-t border-line bg-bg shadow-[0_-8px_40px_rgba(0,0,0,0.12)]"
           style={{ maxHeight: `calc(${keyboard ? `${window.visualViewport?.height ?? 600}px` : '100dvh'} - 12px - env(safe-area-inset-top))` }}
         >
           <div
@@ -93,7 +95,21 @@ export default function Sheet({ open, onClose, title, children }) {
             onPointerCancel={onPointerUp}
           >
             <div className="mx-auto h-[5px] w-9 rounded-full bg-fill-strong" />
-            {title && <h2 className="mt-3 text-center text-[17px] font-semibold">{title}</h2>}
+            {title && (
+              <div className="mt-2 flex items-center justify-between">
+                <span className="size-9" />
+                <h2 className="text-[17px] font-semibold">{title}</h2>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={onClose}
+                  className="press grid size-9 place-items-center rounded-full bg-fill"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
           </div>
           <div className="overflow-y-auto overscroll-contain px-5 pb-[max(20px,env(safe-area-inset-bottom))]">
             {children}

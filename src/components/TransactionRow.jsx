@@ -3,7 +3,7 @@ import { dayLabel, money, shortDate } from '../lib/format.js'
 
 export default function TransactionRow({ tx, highlight, onOpen, onReceive }) {
   const pending = tx.type === 'to_receive'
-  const sub = [pending && `expected ${shortDate(tx.expectedDate).toLowerCase()}`, tx.note].filter(Boolean).join(' · ')
+  const sub = [pending && `Expected ${shortDate(tx.expectedDate)}`, tx.note].filter(Boolean).join(' · ')
 
   return (
     <div className={`flex items-center gap-2 ${highlight ? 'animate-row-in' : ''}`}>
@@ -12,7 +12,7 @@ export default function TransactionRow({ tx, highlight, onOpen, onReceive }) {
           {emojiFor(tx.type, tx.category)}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[16px] font-medium lowercase">{tx.category}</span>
+          <span className="block truncate text-[16px] font-medium">{tx.category}</span>
           {sub && <span className="block truncate text-[12px] text-muted">{sub}</span>}
         </span>
         {!pending && (
@@ -24,8 +24,8 @@ export default function TransactionRow({ tx, highlight, onOpen, onReceive }) {
       {pending && (
         <div className="flex shrink-0 flex-col items-end gap-1">
           <span className="text-[16px] font-medium tabular-nums text-muted">{money(tx.amount, { sign: '+' })}</span>
-          <button type="button" onClick={() => onReceive(tx)} className="pill press h-6 px-2.5 text-[11px]">
-            mark received
+          <button type="button" onClick={() => onReceive(tx)} className="pill press h-6 border-ink px-2.5 text-[11px]">
+            Mark Received
           </button>
         </div>
       )}
@@ -39,7 +39,7 @@ export function DayGroup({ day, items, lastAddedId, onOpen, onReceive }) {
   return (
     <section>
       <div className="flex items-baseline justify-between border-b border-line pb-1.5 text-[12px] text-muted">
-        <span className="lowercase">{dayLabel(day)}</span>
+        <span>{dayLabel(day)}</span>
         {net !== 0 && <span className="tabular-nums">{money(net, { sign: net < 0 ? '-' : '+' })}</span>}
       </div>
       <div className="pt-1">

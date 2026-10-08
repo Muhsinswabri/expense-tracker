@@ -4,7 +4,7 @@ import { sortTransactions } from './ledger.js'
 const COLUMNS = ['id', 'type', 'status', 'amount', 'category', 'date', 'expectedDate', 'note', 'createdAt']
 
 export function toJSON(list) {
-  return JSON.stringify({ app: 'ledger', version: 1, exportedAt: new Date().toISOString(), transactions: sortTransactions(list) }, null, 2)
+  return JSON.stringify({ app: 'chelaveee', version: 1, exportedAt: new Date().toISOString(), transactions: sortTransactions(list) }, null, 2)
 }
 
 function csvCell(v) {
@@ -20,7 +20,7 @@ export function toCSV(list) {
 
 // Share sheet on iPhone (Save to Files), plain download elsewhere.
 export async function saveFile(text, ext, mime) {
-  const name = `ledger-${todayKey()}.${ext}`
+  const name = `chelaveee-${todayKey()}.${ext}`
   const file = new File([text], name, { type: mime })
   if (navigator.canShare?.({ files: [file] })) {
     try {

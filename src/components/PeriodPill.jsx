@@ -4,14 +4,14 @@ import { monthLabel } from '../lib/format.js'
 import { currentMonth } from '../lib/ledger.js'
 
 const MODES = [
-  { mode: 'today', label: 'today' },
-  { mode: 'week', label: 'this week' },
-  { mode: 'month', label: 'this month' },
-  { mode: 'all', label: 'all time' },
+  { mode: 'today', label: 'Today' },
+  { mode: 'week', label: 'This Week' },
+  { mode: 'month', label: 'This Month' },
+  { mode: 'all', label: 'All Time' },
 ]
 
 export function periodLabel({ mode, month }) {
-  if (mode === 'month' && month !== currentMonth()) return monthLabel(month).toLowerCase()
+  if (mode === 'month' && month !== currentMonth()) return monthLabel(month)
   return MODES.find((m) => m.mode === mode).label
 }
 
@@ -24,7 +24,7 @@ export default function PeriodPill({ period, setPeriod, align = 'center' }) {
   }
   return (
     <div className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="pill press" aria-haspopup="menu" aria-expanded={open}>
+      <button type="button" onClick={() => setOpen((o) => !o)} className="pill press h-9 font-medium" aria-haspopup="menu" aria-expanded={open}>
         {periodLabel(period)}
         <ChevronDown size={14} strokeWidth={2} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -51,7 +51,7 @@ export default function PeriodPill({ period, setPeriod, align = 'center' }) {
               )
             })}
             <label className="relative flex h-11 w-full items-center justify-between border-t border-line px-4 text-[15px] text-muted active:bg-fill">
-              pick a month…
+              Pick a Month…
               <input
                 type="month"
                 aria-label="Pick a month"

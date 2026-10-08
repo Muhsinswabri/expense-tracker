@@ -2,8 +2,15 @@ import { useRef, useState } from 'react'
 import { Copy, Download, FileJson, FileSpreadsheet, RefreshCw, Trash2, Upload } from 'lucide-react'
 import { readBackup, saveFile, toCSV, toJSON } from '../lib/backup.js'
 import { getKey, setKey } from '../lib/sync.js'
+import { getTheme, setTheme } from '../lib/theme.js'
 import { useStore } from '../store.jsx'
-import { Confirm, useToast } from './ui.jsx'
+import { Confirm, Segmented, useToast } from './ui.jsx'
+
+const THEMES = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+]
 
 function Row({ icon: Icon, label, onClick, danger, children }) {
   return (
@@ -22,7 +29,7 @@ function Row({ icon: Icon, label, onClick, danger, children }) {
 function Group({ title, footer, children }) {
   return (
     <section className="mt-6">
-      <h3 className="mb-1.5 px-4 text-[13px] text-muted lowercase">{title}</h3>
+      <h3 className="mb-1.5 px-4 text-[13px] font-medium text-muted">{title}</h3>
       <div className="overflow-hidden rounded-[20px] bg-fill [&>*+*]:border-t-[0.5px] [&>*+*]:border-line">{children}</div>
       {footer && <p className="mt-1.5 px-4 text-[13px] leading-snug text-muted">{footer}</p>}
     </section>
@@ -33,6 +40,7 @@ export default function Settings() {
   const { txs, importMany, clearAll, syncInbox } = useStore()
   const toast = useToast()
   const [key, setKeyState] = useState(getKey)
+  const [theme, setThemeState] = useState(getTheme)
   const [confirmClear, setConfirmClear] = useState(false)
   const fileInput = useRef(null)
 
@@ -41,7 +49,7 @@ export default function Settings() {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(exampleUrl)
-      toast('Link copied')
+      toast('Link Copied')
     } catch {
       toast("Couldn't copy. Long-press the link instead.", 'error')
     }
@@ -50,7 +58,7 @@ export default function Settings() {
   const syncNow = async () => {
     try {
       const n = await syncInbox()
-      toast(n ? `${n} added from Shortcuts` : 'Up to date')
+      toast(n ? `${n} added from Shortcuts` : 'Up to Date')
     } catch (err) {
       toast(err?.unauthorized ? "Key doesn't match the server." : "Couldn't reach the server.", 'error')
     }
@@ -80,17 +88,30 @@ export default function Settings() {
 
   return (
     <div className="pb-2">
+      <section className="mt-4">
+        <h3 className="mb-1.5 px-4 text-[13px] font-medium text-muted">Appearance</h3>
+        <Segmented
+          label="Appearance"
+          options={THEMES}
+          value={theme}
+          onChange={(t) => {
+            setThemeState(t)
+            setTheme(t)
+          }}
+        />
+      </section>
+
       <Group
         title="Shortcuts"
         footer="Same key as SHORTCUT_TOKEN on Vercel. Transactions added from Shortcuts appear here when the app opens."
       >
         <label className="flex h-12 items-center gap-3 px-4">
-          <span className="text-[16px]">key</span>
+          <span className="text-[16px]">Key</span>
           <input
             type="password"
             autoComplete="off"
             value={key}
-            placeholder="paste key"
+            placeholder="Paste Key"
             onChange={(e) => {
               setKeyState(e.target.value.trim())
               setKey(e.target.value.trim())
@@ -98,30 +119,30 @@ export default function Settings() {
             className="min-w-0 flex-1 bg-transparent text-right outline-none placeholder:text-muted"
           />
         </label>
-        <Row icon={Copy} label="copy example link" onClick={copy} />
-        <Row icon={RefreshCw} label="sync now" onClick={syncNow} />
+        <Row icon={Copy} label="Copy Example Link" onClick={copy} />
+        <Row icon={RefreshCw} label="Sync Now" onClick={syncNow} />
       </Group>
 
       <Group title="Backup" footer={`${txs.length} transaction${txs.length === 1 ? '' : 's'} stored on this device.`}>
-        <Row icon={FileJson} label="export json" onClick={() => doExport('json')}>
+        <Row icon={FileJson} label="Export JSON" onClick={() => doExport('json')}>
           <Download size={16} className="text-muted" />
         </Row>
-        <Row icon={FileSpreadsheet} label="export csv" onClick={() => doExport('csv')}>
+        <Row icon={FileSpreadsheet} label="Export CSV" onClick={() => doExport('csv')}>
           <Download size={16} className="text-muted" />
         </Row>
-        <Row icon={Upload} label="import backup" onClick={() => fileInput.current?.click()} />
+        <Row icon={Upload} label="Import Backup" onClick={() => fileInput.current?.click()} />
         <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={doImport} />
       </Group>
 
       <Group title="Data">
-        <Row icon={Trash2} label="clear all data" danger onClick={() => setConfirmClear(true)} />
+        <Row icon={Trash2} label="Clear All Data" danger onClick={() => setConfirmClear(true)} />
       </Group>
 
       <Confirm
         open={confirmClear}
-        title="Clear all data?"
+        title="Clear All Data?"
         message={`Deletes all ${txs.length} transactions from this device. Export a backup first if you might need them.`}
-        confirmLabel="clear"
+        confirmLabel="Clear"
         onCancel={() => setConfirmClear(false)}
         onConfirm={async () => {
           setConfirmClear(false)
