@@ -10,7 +10,7 @@ const VIEWS = [
 ]
 const COPY = {
   expense: { total: 'Total Expenses', breakdown: 'Expense Breakdown', empty: 'No Expenses Yet', hint: 'No expenses in this period.' },
-  income: { total: 'Total Income', breakdown: 'Income Breakdown', empty: 'No Income Yet', hint: 'Pending To Receive counts once it is marked received.' },
+  income: { total: 'Total Income', breakdown: 'Income Breakdown', empty: 'No Income Yet', hint: 'Pending To Receive counts once it is marked received. Borrowed Money is not income.' },
 }
 
 /** One type at a time; everything comes from the same period-filtered transactions as Home. */

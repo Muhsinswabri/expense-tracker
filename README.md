@@ -68,6 +68,7 @@ Same as Add Expense, with two changes:
 Same as Add Income, with these changes:
 
 - `type` = `to_receive`
+- The category list also offers `Borrowed Money`: once received it raises the balance but is not counted as income. Repay it with a normal expense.
 - Before step 4, add **Ask for Input** (Date, prompt `Expected date`).
 - Then add **Format Date** with Custom format `yyyy-MM-dd`.
 - In step 4, add the JSON field `expectedDate` = *Formatted Date*.
@@ -107,7 +108,7 @@ Every transaction is stored in IndexedDB as:
 ```
 
 - Marking a To Receive entry as received changes it to `income`, dated today.
-- Balance = received income − expenses, for the selected period.
+- Balance = received income + received Borrowed Money − expenses, for the selected period. Total Income and the income breakdown leave Borrowed Money out.
 - To Receive entries are counted in the period of their expected date.
 
 Settings has Export JSON, Export CSV, Import backup (merges by id) and Clear all data.

@@ -5,11 +5,19 @@ export const INCOME_CATEGORIES = ['Freelance', 'Salary', 'Business', 'Other']
 export const EXPENSE_CATEGORIES = [
   'Food', 'Travel', 'Education', 'Shopping', 'Bills', 'Health', 'Personal', 'Other',
 ]
+export const BORROWED_MONEY = 'Borrowed Money'
+export const RECEIVE_CATEGORIES = ['Freelance', 'Salary', 'Business', BORROWED_MONEY, 'Other']
 export const TYPES = ['expense', 'income', 'to_receive']
 
 export function categoriesFor(type) {
+  if (type === 'to_receive') return RECEIVE_CATEGORIES
   return type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES
 }
+
+// Money that came in but is owed back: it raises the balance, but it is not income.
+// Only received money counts; pending To Receive never touches the balance at all.
+export const isBorrowedMoney = (t) =>
+  t.type === 'income' && t.status === 'received' && String(t.category ?? '').trim().toLowerCase() === BORROWED_MONEY.toLowerCase()
 
 const MAX_AMOUNT = 1e9
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
