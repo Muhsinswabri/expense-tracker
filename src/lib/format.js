@@ -33,6 +33,13 @@ export function dayLabel(key) {
 export const shortDate = (key) =>
   fromKey(key).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
 
+// "Wednesday, 14 October 2026"
+export function longDate(key) {
+  const d = fromKey(key)
+  const weekday = d.toLocaleDateString('en-IN', { weekday: 'long' })
+  return `${weekday}, ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`
+}
+
 export const monthLabel = (ym) => {
   const [y, m] = ym.split('-').map(Number)
   return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })

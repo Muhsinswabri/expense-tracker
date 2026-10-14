@@ -4,6 +4,7 @@ import PeriodPill from '../components/PeriodPill.jsx'
 import { DayGroup, byDay } from '../components/TransactionRow.jsx'
 import { AnimatedMoney, Empty } from '../components/ui.jsx'
 import WaveChart from '../components/WaveChart.jsx'
+import { longDate, todayKey } from '../lib/format.js'
 import { dateOf } from '../lib/ledger.js'
 
 const RECENT = 8
@@ -33,6 +34,19 @@ function Heading({ children, action, onAction }) {
 
 export default function Home({ txs, list, stats, breakdown, period, setPeriod, lastAddedId, onOpen, onReceive, goTo }) {
   const recent = list.slice(0, RECENT)
+  // Local calendar day: re-checked at the next midnight and whenever the app returns to the foreground.
+  const [today, setToday] = useState(todayKey)
+  useEffect(() => {
+    const sync = () => setToday(todayKey())
+    const now = new Date()
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+    const timer = setTimeout(sync, midnight - now + 1000)
+    document.addEventListener('visibilitychange', sync)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', sync)
+    }
+  }, [today])
   // Hairline under the sticky header only once content scrolls beneath it.
   const [scrolled, setScrolled] = useState(() => window.scrollY > 4)
   useEffect(() => {
@@ -55,6 +69,7 @@ export default function Home({ txs, list, stats, breakdown, period, setPeriod, l
       </header>
 
       <section className="flex flex-col items-center">
+        <p className="mb-4 text-[11px] font-medium tracking-[0.08em] text-muted uppercase">{longDate(today)}</p>
         <p className="text-[13px] font-medium text-muted">Available Balance</p>
         <AnimatedMoney value={stats.balance} className="mt-2 text-[48px] leading-none font-semibold tracking-[-0.04em]" />
         <div className="mt-6 grid w-full grid-cols-3 divide-x divide-line">
