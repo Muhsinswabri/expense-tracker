@@ -33,8 +33,6 @@ export function parseType(v) {
 // "₹1,250.50" -> 1250.5. Returns null when unusable.
 export function parseAmount(v) {
   if (typeof v === 'number') return finiteAmount(v)
-  // A minus sign must not be silently dropped: "-50" is invalid, not 50.
-  if (/[-−]/.test(String(v ?? ''))) return null
   const cleaned = String(v ?? '').replace(/[^\d.]/g, '')
   if (!cleaned || (cleaned.match(/\./g) || []).length > 1) return null
   return finiteAmount(Number(cleaned))

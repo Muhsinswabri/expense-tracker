@@ -45,21 +45,14 @@ export default function Settings() {
   const [confirmClear, setConfirmClear] = useState(false)
   const fileInput = useRef(null)
 
-  // The real key is never put in the example: it goes in the Authorization header, not a URL.
-  const exampleRequest = [
-    `POST ${location.origin}/api/add`,
-    'Authorization: Bearer YOUR_KEY',
-    'Content-Type: application/json',
-    '',
-    '{"id":"sc-20261015-101530123-4821","type":"expense","amount":250,"category":"Food","note":"Lunch"}',
-  ].join('\n')
+  const exampleUrl = `${location.origin}/api/add?key=${encodeURIComponent(key || 'YOUR_KEY')}&type=expense&amount=250&category=Food&note=Lunch`
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(exampleRequest)
-      toast('Example Copied')
+      await navigator.clipboard.writeText(exampleUrl)
+      toast('Link Copied')
     } catch {
-      toast("Couldn't copy the example.", 'error')
+      toast("Couldn't copy. Long-press the link instead.", 'error')
     }
   }
 
@@ -132,7 +125,7 @@ export default function Settings() {
             className="min-w-0 flex-1 bg-transparent text-right outline-none placeholder:text-muted"
           />
         </label>
-        <Row icon={Copy} label="Copy Example Request" onClick={copy} />
+        <Row icon={Copy} label="Copy Example Link" onClick={copy} />
         <Row icon={RefreshCw} label="Sync Now" onClick={syncNow} />
       </Group>
 

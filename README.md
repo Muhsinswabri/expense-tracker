@@ -17,7 +17,7 @@ Shortcut ──POST /api/add──▶ inbox (Upstash Redis) ──app opens─�
 ```
 
 - **IndexedDB on the phone is the only source of truth.** The server inbox only holds Shortcut entries until the app picks them up.
-- The app pulls the inbox when it opens, when it is focused or comes back to the foreground, when it reconnects, and every 15 s while it is visible. It writes each entry to IndexedDB and only then deletes it from the inbox, so entries aren't lost if the app closes mid-sync.
+- The app pulls the inbox when it opens, when it comes back to the foreground, and when it reconnects. It writes each entry to IndexedDB and only then deletes it from the inbox, so entries aren't lost if the app closes mid-sync.
 - Duplicates are blocked twice:
   - The server rejects identical submissions within 30 s.
   - The app skips ids it already has.
@@ -41,59 +41,53 @@ To test the API locally, use `npx vercel dev` with the same env vars in `.env.lo
 
 Create one shortcut per action in the Shortcuts app. Name it **Add Expense**, **Add Income** or **Add To Receive** so Siri can run it by name.
 
-Every shortcut asks for the amount and for a category from a list. There is no default category: cancelling either prompt stops the shortcut and nothing is saved.
-
 ### Add Expense
 
 1. **Ask for Input**: Number, prompt `Amount`
-2. **Choose from List**: `Food, Travel, Education, Shopping, Bills, Health, Personal` (add your own custom categories as extra items), prompt `Category`
+2. **Choose from List**: `Food, Travel, Education, Shopping, Bills, Health, Personal, Other`, prompt `Category`
 3. **Ask for Input**: Text, prompt `Note` (you can leave it empty)
-4. **Format Date**: *Current Date*, Custom format `yyyyMMdd-HHmmssSSS`
-5. **Random Number**: between `1000` and `9999`
-6. **Text**: `sc-` + *Formatted Date* + `-` + *Random Number*. This is the transaction id. Build it once, before the request, so a retry reuses it and is never saved twice. It must be 6–64 letters, digits, `-` or `_`. Shortcuts has no built-in UUID action; any UUID you generate also works.
-7. **Get Contents of URL**: `https://YOUR-APP.vercel.app/api/add`
+4. **Get Contents of URL**: `https://YOUR-APP.vercel.app/api/add`
    - Method: **POST**
    - Headers: `Authorization` = `Bearer YOUR_KEY`
    - Request Body: **JSON**
-     - `id` = *Text* (step 6)
      - `type` = `expense`
      - `amount` = *Provided Input* (step 1)
-     - `category` = *Chosen Item* (step 2)
+     - `category` = *Chosen Item*
      - `note` = *Provided Input* (step 3)
-8. **Show Notification**: *Contents of URL*. The server replies with a line like `Added expense: ₹250 · Food`, or says why it refused (for example `Not added: Amount must be a number above 0.`).
+5. **Show Notification**: *Contents of URL*. The server replies with a line like `Added expense: ₹250 · Food`.
 
 ### Add Income
 
 Same as Add Expense, with two changes:
 
 - `type` = `income`
-- The category list is `Freelance, Salary, Business` (plus your custom income categories)
+- The category list is `Freelance, Salary, Business, Other`
 
 ### Add To Receive
 
 Same as Add Income, with these changes:
 
 - `type` = `to_receive`
-- The category list is `Freelance, Salary, Business, Borrowed Money` (plus your custom ones). `Borrowed Money`: once received it raises the balance but is not counted as income. Repay it with a normal expense.
-- Before step 7, add **Ask for Input** (Date, prompt `Expected date`).
+- The category list also offers `Borrowed Money`: once received it raises the balance but is not counted as income. Repay it with a normal expense.
+- Before step 4, add **Ask for Input** (Date, prompt `Expected date`).
 - Then add **Format Date** with Custom format `yyyy-MM-dd`.
-- In step 7, add the JSON field `expectedDate` = *Formatted Date*.
+- In step 4, add the JSON field `expectedDate` = *Formatted Date*.
 
 ### API reference
 
-`POST /api/add` takes a JSON body. `GET /api/add?…` with query parameters also works, but it puts the transaction in the URL, so use POST.
+`POST /api/add` takes a JSON body. `GET /api/add?…` with query parameters also works.
 
 | field | required | notes |
 |---|---|---|
 | `type` | yes | `expense`, `income`, `to_receive` |
 | `amount` | yes | `250`, `1,250.50` and `₹250` are all accepted |
-| `category` | no | Built-in names are matched case-insensitively. Other names (e.g. your custom `Gym`) are kept as given. The Shortcuts above always send one; an empty value becomes `Other` |
+| `category` | no | Built-in names are matched case-insensitively. Other names (e.g. your custom `Gym`) are kept as given. Empty becomes `Other` |
 | `note` | no | Up to 200 characters |
 | `date` | no | Defaults to the day the Shortcut ran |
 | `expectedDate` | no | For `to_receive`. Accepts `2026-10-15`, `15 Oct 2026` or `15/10/2026` |
-| `id` | no | 6–64 characters of `A–Z a–z 0–9 _ -`. Your own id makes retries idempotent. Identical entries with different ids are all kept |
+| `id` | no | Your own id makes retries idempotent |
 
-Send the key as `Authorization: Bearer …`. A `key` field in the body or a `?key=` in the URL is still accepted for old shortcuts, but URLs end up in logs and history, so do not use them.
+The key can be sent as `Authorization: Bearer …`, as a `key` field in the body, or as `?key=` in the URL.
 
 Responses are plain text:
 
@@ -104,17 +98,6 @@ Responses are plain text:
 | `401` | Wrong key |
 | `409` | Duplicate within 30 s |
 | `500` | Server not set up |
-
-## Back Tap
-
-Back Tap runs a shortcut when you tap the back of the iPhone. It needs no app to be open.
-
-1. Build **Add Expense** and **Add Income** as above and run each once from the Shortcuts app to check it.
-2. Open **Settings → Accessibility → Touch → Back Tap**.
-3. **Double Tap** → scroll to **Shortcuts** → **Add Expense**.
-4. **Triple Tap** → scroll to **Shortcuts** → **Add Income**.
-
-Tap twice or three times on the back of the phone, enter the amount, pick the category. The notification confirms the save. The entry shows up in Chelaveee within 15 s if it is open, or the next time you open it.
 
 ## Data
 
