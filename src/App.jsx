@@ -116,7 +116,8 @@ export default function App() {
     }
   }
 
-  // Pick up Shortcut-added transactions whenever the app comes to the foreground.
+  // Pick up Shortcut-added transactions when the app opens, is focused, comes back online,
+  // and every 15 s while visible (a Back Tap Shortcut can run over an app that stays open).
   useEffect(() => {
     if (!ready) return
     const sync = () =>
@@ -126,10 +127,14 @@ export default function App() {
     const onVisible = () => document.visibilityState === 'visible' && sync()
     sync()
     document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
     window.addEventListener('online', sync)
+    const poll = setInterval(onVisible, 15_000)
     return () => {
       document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
       window.removeEventListener('online', sync)
+      clearInterval(poll)
     }
   }, [ready, syncInbox, toast])
 
