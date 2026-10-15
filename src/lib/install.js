@@ -44,3 +44,15 @@ export function subscribe(f) {
 
 // Snapshot for useSyncExternalStore: 'installed' | 'prompt' | 'ios' | 'manual'.
 export const installState = () => (isInstalled() ? 'installed' : canPrompt() ? 'prompt' : isIOS() ? 'ios' : 'manual')
+
+// Installed app only: no pinch or double-tap zoom. The website in a normal browser tab keeps zoom.
+if (isInstalled()) {
+  // Panning stays; pinch and double-tap are not handled by the browser (Chrome/Android, Edge, Firefox).
+  document.documentElement.style.touchAction = 'pan-x pan-y'
+  // Same intent for engines that read the viewport.
+  document
+    .querySelector('meta[name="viewport"]')
+    ?.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover')
+  // iOS ignores user-scalable and touch-action for pinch; its gesture events can be cancelled instead.
+  document.addEventListener('gesturestart', (e) => e.preventDefault())
+}
